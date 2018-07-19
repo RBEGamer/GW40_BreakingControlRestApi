@@ -1,0 +1,8 @@
+{
+    "mode": "dev",
+    "webserver_default_port":3345,
+    "serial_port_name":"/dev/tty-usbserial1",
+    "serial_baud_rate":9600,
+    "enable_serial_connection":false
+
+}

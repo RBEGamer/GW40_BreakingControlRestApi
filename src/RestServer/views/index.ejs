@@ -1,0 +1,209 @@
+<html>
+
+<head>
+
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>GW40 - BREAKING INTERFACE</title>
+
+
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/small-business.css" rel="stylesheet">
+    
+
+</head>
+
+<body>
+
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">BREAKING REST API INTERFACE</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <!--            <a class="nav-link" href="#">Main
+                          <span class="sr-only">(current)</span>
+                        </a>-->
+                    </li>
+
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+
+
+
+    <div class="container">
+
+        <!-- Heading Row -->
+        <div class="row my-4">
+            <div class="col-lg-8">
+                <canvas id="canvas" width="800" height="580">
+                    Your browser does not support the canvas element.
+                </canvas>
+
+            </div>
+            <!-- /.col-lg-8 -->
+            <div class="col-lg-4">
+                <h1>VENTIL STATES</h1>
+                <p>
+                    <div id="state_table" name="state_table"></div>
+                </p>
+
+            </div>
+            <!-- /.col-md-4 -->
+        </div>
+        <!-- /.row -->
+
+
+//TODO GENERATE BUTTON GROUPS FOR ALL VENTILS
+
+
+
+
+
+
+
+
+
+        <!-- Footer -->
+        <footer class="py-5 bg-dark">
+            <div class="container">
+                <p class="m-0 text-center text-white">
+                    <a href='github.com/RBEGamer'></a>
+                </p>
+            </div>
+            <!-- /.container -->
+        </footer>
+
+        <!-- Bootstrap core JavaScript -->
+        <script src="vendor/jquery/jquery.min.js"></script>
+        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+ 
+
+
+
+
+        <script>
+            const radius = 10;
+            var canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d");
+            var background = new Image();
+            background.src = "./hyd_bg.jpg";
+            //SET TO BG IMG_SIZE
+            canvas.width = 800;
+            canvas.height = 580;
+
+            var socket = null;
+            var state_table_dom = document.getElementById("state_table");
+
+
+            var ventil_data = <%- JSON.stringify(vent_init_data) %>
+
+
+            function send_manual_state(_id, _state){
+                //SEND TO SERVER VIA WEBSOCKET
+                -> check with current ventil_data then send
+            }
+
+
+            function generate_button_groups(){
+                //GENERATE IN HTML5 TABLE button groups vith accepted state
+               -> from ventil_data
+            }
+
+
+
+            function update_ventile() {
+                //CLEAR CANAS
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(background, 0, 0);
+
+                var state_table = "<table class=\"table\">";
+                state_table += "<thead class=\"thead-light\">";
+                state_table += "<tr><th scope=\"col\">ID</th><th scope=\"col\">Name</th><th scope=\"col\">Status</th></tr></thead><tbody>";
+                var tbl_index = 0;
+                var state_name = "";
+                //FOR EACH VENTIL
+                for (var prop in ventil_data) {
+                    if (!ventil_data.hasOwnProperty(prop)) {continue;}
+
+                    ctx.beginPath();
+                    ctx.arc(ventil_data[prop].pos_x, ventil_data[prop].pos_y, radius, 0, 2 * Math.PI, false);
+                    if (ventil_data[prop].state == 0) {
+                        ctx.fillStyle = 'red';
+                        state_name= "CLOSED"
+                    } else if (ventil_data[prop].state == 1) {
+                        ctx.fillStyle = 'green';
+                        state_name = "OPEN"
+                    } else if (ventil_data[prop].state == 2) {
+                        ctx.fillStyle = 'yellow';
+                    } else if (ventil_data[prop].state == 3) {
+                        ctx.fillStyle = 'blue';
+                    } else {
+                        ctx.fillStyle = 'grey';
+                        state_name = "UNKNOWN"
+                    }
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#003300';
+                    ctx.stroke();
+                    //ctx.addHitRegion({id: "click_" + ventil_data[prop].id});
+
+
+                    tbl_index++;
+                    state_table += "<tr><th scope=\"row\"> "+ventil_data[prop].id+" </th><th scope=\"row\"> "+ventil_data[prop].visible_name+" </th><th scope=\"row\"> "+state_name+"</th></tr>";
+                        
+
+                    generate_button_groups();
+           
+                        
+                }
+                state_table += "</tbody></table>";
+
+                if (tbl_index > 0) {
+                    state_table_dom.innerHTML = state_table;
+                }
+
+
+            }
+
+
+
+            background.onload = function () {
+                ctx.drawImage(background, 0, 0);
+                update_ventile();
+            }
+
+
+            $(document).ready(function () {
+
+               
+                socket = io();
+               
+
+
+    
+                socket.on('broadcast', function (data) {
+                    if(data == null){return;}
+                    ventil_data = data;
+                   // alert(data);
+                    update_ventile();
+                  
+                });
+            });
+        </script>
+
+        </bod>
+
+</html>
