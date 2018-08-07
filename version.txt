@@ -1,1 +1,3 @@
-0.1
+WorkflowFileRelativeFilePath=\workflows\CompleteWorkflow_Lena.xaml
+UiPathRobotExecutablePath=C:\Program Files (x86)\UiPath\Studio
+UiPathRobotExecutableName=UiRobot.exe
