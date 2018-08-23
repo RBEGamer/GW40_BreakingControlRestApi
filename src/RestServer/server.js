@@ -24,6 +24,7 @@ if (config.enable_serial_connection) {
         baudRate: config.serial_baud_rate
     });
 }
+var VERSION =0.2;
 
 var port = process.env.PORT || config.webserver_default_port || 3000;
 
@@ -91,7 +92,7 @@ var ventil_data = {
 
     },
     hl_ventil_rechts: {
-        state: 1,
+        state: 0,
         pos_x: 520,
         pos_y: 25,
         visible_name: "HL-Rechts",
@@ -100,7 +101,7 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
     ep_bremsventil: {
-        state: 1,
+        state: 0,
         pos_x: 220,
         pos_y: 150,
         visible_name: "EP-Bremsventil",
@@ -109,7 +110,7 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
     uic_stellung: {
-        state: -1,
+        state: 0,
         pos_x: 345,
         pos_y: 177,
         visible_name: "UIC Stellung",
@@ -118,7 +119,7 @@ var ventil_data = {
         valid_states: ["0", "1", "2"]
     },
     bremse_aus_ventile_a: {
-        state: 1,
+        state: 0,
         pos_x: 577,
         pos_y: 132,
         visible_name: "B-Off-A",
@@ -127,7 +128,7 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
     bremse_aus_ventile_b: {
-        state: 1,
+        state: 0,
         pos_x: 577,
         pos_y: 190,
         visible_name: "B-Off-B",
@@ -145,7 +146,7 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
     steuerungsventil_kurzhub_uic: {
-        state: 1,
+        state: 0,
         pos_x: 290,
         pos_y: 200,
         visible_name: "UIC-Zylinderventil",
@@ -154,7 +155,7 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
     bistabile_magnetventil: {
-        state: 1,
+        state: 0,
         pos_x: 210,
         pos_y: 310,
         visible_name: "Brems-Bistabil",
@@ -163,7 +164,7 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
     relaisventil: {
-        state: 1,
+        state: 0,
         pos_x: 400,
         pos_y: 370,
         visible_name: "Relaisventil",
@@ -181,6 +182,8 @@ var ventil_data = {
         valid_states: ["0", "1"]
     },
 };
+
+var ventil_data_init = ventil_data;
 var last_update = Math.round(new Date().getTime() / 1000);
 
 
@@ -268,6 +271,34 @@ app.get('/rest/:vent_id/set_state/:state', function (req, res) {
         err_text: "ID NOT FOUND"
     });
 });
+
+
+function RESET_ALL(){
+    ventil_data = ventil_data_init;
+    last_update = Math.round(new Date().getTime() / 1000);
+    //TODO UPDATE TIMESTAMP FROM ALL VENTILES
+
+    for (let index = 0; index < ventil_data_init.length; index++) {
+        const element = ventil_data_init[index];
+        if (serial_port != null) {
+            var packet_id = uuidv1();
+            serial_port.write("set_auto_" + String(element.id) + "_" + String(element.state) + "_");
+        }
+    }
+}
+RESET_ALL(); //AUSGANGSZUSTAND
+
+
+app.get('/reset', function (req, res) {
+    RESET_ALL();
+    res.json({
+        ventile: ventil_data,
+        last_update: last_update,
+        reset:true
+    });
+});
+
+
 
 app.get('/rest/:vent_id/get_state', function (req, res) {
 
