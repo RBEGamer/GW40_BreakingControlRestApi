@@ -192,6 +192,14 @@
                 socket = io();
                
 
+                socket.on('err', function (data) {
+                    if(data == null || data.msg == null){return;}
+
+                    if(data.silcence){console.log(data);return;}
+                    alert(data.msg)
+                  
+                });
+
 
     
                 socket.on('broadcast', function (data) {

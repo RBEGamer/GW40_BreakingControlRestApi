@@ -65,12 +65,14 @@ server.listen(port, function () {
 if (serial_port != null) {
     serial_port.on('error', function (err) {
         console.log('Error: ', err.message);
+        io.emit('err', { msg: String(err.message), silcence: true });
     });
 }
 
 if (serial_port != null) {
     serial_port.on('open', function () {
         // open logic
+        io.emit('err', { msg: "SERIAL PORT OPEN", silcence: true });
     });
 }
 
@@ -291,6 +293,7 @@ RESET_ALL(); //AUSGANGSZUSTAND
 
 app.get('/reset', function (req, res) {
     RESET_ALL();
+    io.emit('err', { msg: "SYSTEM RESET VIA REST API", silcence:true});
     res.json({
         ventile: ventil_data,
         last_update: last_update,
