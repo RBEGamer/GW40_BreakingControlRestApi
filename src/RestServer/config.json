@@ -1,5 +1,7 @@
 {
     "mode": "dev",
-    "webserver_default_port":3345
-
+    "webserver_default_port":3345,
+    "enable_serial_connection":true,
+    "serial_baud_rate":9600,
+    "serial_port_name":"/dev/ttyACM0"
 }
