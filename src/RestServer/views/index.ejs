@@ -65,7 +65,7 @@
         <!-- /.row -->
 
 
-//TODO GENERATE BUTTON GROUPS FOR ALL VENTILS
+
 
 
 
@@ -110,20 +110,6 @@
 
             var ventil_data = <%- JSON.stringify(vent_init_data) %>
 
-
-            function send_manual_state(_id, _state){
-                //SEND TO SERVER VIA WEBSOCKET
-                -> check with current ventil_data then send
-            }
-
-
-            function generate_button_groups(){
-                //GENERATE IN HTML5 TABLE button groups vith accepted state
-           //TODO    -> from ventil_data
-            }
-
-
-
             function update_ventile() {
                 //CLEAR CANAS
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -164,8 +150,6 @@
                     tbl_index++;
                     state_table += "<tr><th scope=\"row\"> "+ventil_data[prop].id+" </th><th scope=\"row\"> "+ventil_data[prop].visible_name+" </th><th scope=\"row\"> "+state_name+"</th></tr>";
                         
-
-                    generate_button_groups();
            
                         
                 }
@@ -191,16 +175,6 @@
                
                 socket = io();
                
-
-                socket.on('err', function (data) {
-                    if(data == null || data.msg == null){return;}
-
-                    if(data.silcence){console.log(data);return;}
-                    alert(data.msg)
-                  
-                });
-
-
     
                 socket.on('broadcast', function (data) {
                     if(data == null){return;}
