@@ -109,7 +109,8 @@ var ventil_data = {
         visible_name: "EP-Bremsventil",
         id: 3,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     uic_stellung: {
         state: 0,
@@ -118,7 +119,8 @@ var ventil_data = {
         visible_name: "UIC Stellung",
         id: 4,
         last_update: null,
-        valid_states: ["0", "1", "2"]
+        valid_states: ["0", "1", "2"],
+        is_uic: true
     },
     bremse_aus_ventile_a: {
         state: 0,
@@ -127,7 +129,8 @@ var ventil_data = {
         visible_name: "B-Off-A",
         id: 5,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     bremse_aus_ventile_b: {
         state: 0,
@@ -136,7 +139,8 @@ var ventil_data = {
         visible_name: "B-Off-B",
         id: 6,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     bremse_aus_ventile_c: {
         state: 0,
@@ -145,7 +149,8 @@ var ventil_data = {
         visible_name: "B-Off-C",
         id: 7,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     steuerungsventil_kurzhub_uic: {
         state: 0,
@@ -154,7 +159,8 @@ var ventil_data = {
         visible_name: "UIC-Zylinderventil",
         id: 8,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     bistabile_magnetventil: {
         state: 0,
@@ -163,7 +169,8 @@ var ventil_data = {
         visible_name: "Brems-Bistabil",
         id: 9,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     relaisventil: {
         state: 0,
@@ -172,7 +179,8 @@ var ventil_data = {
         visible_name: "Relaisventil",
         id: 10,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
     r_mode_ventil: {
         state: 0,
@@ -181,7 +189,8 @@ var ventil_data = {
         visible_name: "R-Mode",
         id: 11,
         last_update: null,
-        valid_states: ["0", "1"]
+        valid_states: ["0", "1"],
+        is_uic: false
     },
 };
 
@@ -246,7 +255,12 @@ app.get('/rest/:vent_id/set_state/:state', function (req, res) {
                 //SEND NEW STATE TO SERIAL
                 if(serial_port != null){
                     var packet_id =uuidv1();
-                    serial_port.write("set_auto_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_");
+                    if (ventil_data[key].is_uic){
+                        serial_port.write("SETUIC_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_");
+                    }else{
+                        serial_port.write("SET_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_");
+                    }
+                    
                 }
 
                 return;
@@ -284,7 +298,11 @@ function RESET_ALL(){
         const element = ventil_data_init[index];
         if (serial_port != null) {
             var packet_id = uuidv1();
-            serial_port.write("set_auto_" + String(element.id) + "_" + String(element.state) + "_");
+            if (element.is_uic) {
+                serial_port.write("SETUIC_" + String(element.id) + "_" + String(element.state) + "_");
+            } else {
+                serial_port.write("SET_" + String(element.id) + "_" + String(element.state) + "_");
+            }
         }
     }
 }
