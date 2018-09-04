@@ -16,14 +16,17 @@ var got = require('got');
 
 var fs = require('fs');
 var SerialPort = require('serialport');
-
+const Readline = SerialPort.parsers.Readline;
 var serial_port = null;
 
-if (config.enable_serial_connection) {
-    serial_port = new SerialPort(config.serial_port_name, {
-        baudRate: config.serial_baud_rate
+
+serial_port = new SerialPort('/dev/ttyAMA0', {
+        baudRate: 9600,
+
+        autoOpen: false,
+        flowControl: false
     });
-}
+
 var VERSION =0.2;
 
 var port = process.env.PORT || config.webserver_default_port || 3000;
@@ -61,26 +64,45 @@ server.listen(port, function () {
     console.log('Server listening at port %d', port);
 });
 
+const parser = serial_port.pipe(new Readline({ delimiter: '\r\n' }));
+parser.on('data', console.log);
 
-if (serial_port != null) {
+
     serial_port.on('error', function (err) {
         console.log('Error: ', err.message);
         io.emit('err', { msg: String(err.message), silcence: true });
     });
-}
 
-if (serial_port != null) {
-    serial_port.on('open', function () {
-        // open logic
-        io.emit('err', { msg: "SERIAL PORT OPEN", silcence: true });
-    });
-}
+serial_port.open(function (err) {
+    if (err) {
+        return console.log('Error opening port: ', err.message);
+    }
 
-if (serial_port != null) {
-    serial_port.on('readable', function () {
-        console.log('Data:', port.read());
-    });
-}
+    // Because there's no callback to write, write errors will be emitted on the port:
+    serial_port.write('RESET___');
+    io.emit('err', { msg: "SERIAL PORT OPEN", silcence: true });
+});
+
+
+// The open event is always emitted
+serial_port.on('open', function () {
+    // open logicg
+});
+
+
+
+ //   serial_port.on('readable', function () {
+   //     console.log('Data:', serial_port.read());
+//});
+
+  // this.port.on('data', function (data) {
+    //console.log('Data1:', data, data.toString('utf8'));
+    //});
+serial_port.on('error', function (err) {
+    console.log('Error: ', err.message);
+});
+
+
 
 var ventil_data = {
     hl_ventil_links: {
@@ -253,15 +275,17 @@ app.get('/rest/:vent_id/set_state/:state', function (req, res) {
 
 
                 //SEND NEW STATE TO SERIAL
-                if(serial_port != null){
+                
                     var packet_id =uuidv1();
                     if (ventil_data[key].is_uic){
-                        serial_port.write("SETUIC_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_");
+                        console.log("SETUIC_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_\r\n");
+                        serial_port.write("SETUIC_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_\r\n");
                     }else{
-                        serial_port.write("SET_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_");
+                        console.log("SET_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_\r\n");
+                        serial_port.write("SET_" + String(ventil_data[key].id) + "_" + String(ventil_data[key].state) + "_\r\n");
                     }
                     
-                }
+                
 
                 return;
             } else {
@@ -294,22 +318,29 @@ function RESET_ALL(){
     last_update = Math.round(new Date().getTime() / 1000);
     //TODO UPDATE TIMESTAMP FROM ALL VENTILES
 
+    console.log("RESET___");
+    serial_port.write("RESET___");
+
     for (let index = 0; index < ventil_data_init.length; index++) {
         const element = ventil_data_init[index];
-        if (serial_port != null) {
+        
             var packet_id = uuidv1();
             if (element.is_uic) {
-                serial_port.write("SETUIC_" + String(element.id) + "_" + String(element.state) + "_");
+              //  console.log("SETUIC_" + String(element.id) + "_" + String(element.state) + "_\r\n");
+        //        serial_port.write("SETUIC_" + String(element.id) + "_" + String(element.state) + "_\r\n");
             } else {
-                serial_port.write("SET_" + String(element.id) + "_" + String(element.state) + "_");
-            }
+            //    console.log("SET_" + String(element.id) + "_" + String(element.state) + "_\r\n");
+          //      serial_port.write("SET_" + String(element.id) + "_" + String(element.state) + "_\r\n");
         }
     }
 }
 RESET_ALL(); //AUSGANGSZUSTAND
 
 
+
+
 app.get('/reset', function (req, res) {
+ 
     RESET_ALL();
     io.emit('err', { msg: "SYSTEM RESET VIA REST API", silcence:true});
     res.json({

@@ -11,19 +11,19 @@ volatile bool invert_io = true;
 
 #ifdef ARD_UNO
 #define OUT_COUNT 12
-byte pins[OUT_COUNT][2]={
- {1,2},
- {2,3},
- {3,4},
- {4,5},
- {5,6},
- {6,7},
- {7,8},
- {8,9},
- {9,10},
- {10,11},
- {11,12},
- {12,13}
+byte pins[OUT_COUNT][3]={
+ {1,2,0},
+ {2,3,0},
+ {3,4,0},
+ {4,5,0},
+ {5,6,0},
+ {6,7,0},
+ {7,8,0},
+ {8,9,0},
+ {9,10,0},
+ {10,11,0},
+ {11,12,0},
+ {12,13,0}
 };
 #endif
 
@@ -54,13 +54,20 @@ String readString;
 void setup() {
 
    Serial.begin(9600);
-
+Serial.println("__START__");
    
   // put your setup code here, to run once:
   for(int i = 0; i < OUT_COUNT; i++){  
     pinMode(pins[i][1], OUTPUT);
 
     if(!invert_io){
+    digitalWrite(pins[i][1], HIGH);
+    }else{
+    digitalWrite(pins[i][1], LOW);
+    }
+
+    delay(2000);
+     if(!invert_io){
     digitalWrite(pins[i][1], LOW);
     }else{
     digitalWrite(pins[i][1], HIGH);
@@ -93,13 +100,15 @@ String getValue(String data, char separator, int index)
 
 void loop() {
   // put your main code here, to run repeatedly:
+ 
 while (Serial.available())
     {
-        delay(3); //delay to allow buffer to fill
+        delay(5); //delay to allow buffer to fill
         if (Serial.available() > 0)
         {
             char c = Serial.read(); //gets one byte from serial buffer
             readString += c;        //makes the string readString
+            Serial.println(c);
         }
     }
 
